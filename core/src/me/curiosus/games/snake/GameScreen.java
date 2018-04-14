@@ -62,6 +62,7 @@ public class GameScreen extends ScreenAdapter {
             timer = MOVE_TIME;
             placeApple();
             moveSnake();
+            updateBodyParts();
         }
         clearScreen();
         draw();
@@ -79,24 +80,17 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void addBodyPart() {
-        BodyPart bodyPart = new BodyPart(snakeBody, snakeXPrevious, snakeYPrevious);
+        BodyPart bodyPart = new BodyPart(snakeBody);
+        bodyPart.setPosition(snakeXPrevious, snakeYPrevious);
         bodyParts.insert(0, bodyPart);
-        switch(snakeDirection) {
-            case RIGHT:
-                bodyPart.setPosition(snakeX - SNAKE_MOVEMENT, snakeY);
-                break;
-            case LEFT:
-                bodyPart.setPosition(snakeX + SNAKE_MOVEMENT, snakeY);
-                break;
-            case UP:
-                bodyPart.setPosition(snakeX, snakeY - SNAKE_MOVEMENT);
-                break;
-            case DOWN:
-                bodyPart.setPosition(snakeX, snakeY + SNAKE_MOVEMENT);
-                break;
-        }
+    }
 
-        bodyPart.setPosition(snakeX, snakeY - 32);
+    private void updateBodyParts() {
+        if (bodyParts.size > 0) {
+            BodyPart bodyPart = bodyParts.removeIndex(0);
+            bodyPart.setPosition(snakeXPrevious, snakeYPrevious);
+            bodyParts.add(bodyPart);
+        }
     }
 
     private boolean collision() {
@@ -122,13 +116,14 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
+
+
     private void placeApple() {
         if (!appleAvailable) {
-            System.out.println(snakeScore);
             boolean intersectsSnake = true;
             while (intersectsSnake) {
-                appleX = MathUtils.random(0, Gdx.graphics.getWidth() / SNAKE_MOVEMENT) * SNAKE_MOVEMENT - SNAKE_MOVEMENT;
-                appleY = MathUtils.random(0, Gdx.graphics.getHeight() / SNAKE_MOVEMENT) * SNAKE_MOVEMENT - SNAKE_MOVEMENT;
+                appleX = MathUtils.random(Gdx.graphics.getWidth() / SNAKE_MOVEMENT -1) * SNAKE_MOVEMENT;
+                appleY = MathUtils.random(Gdx.graphics.getHeight() / SNAKE_MOVEMENT -1) * SNAKE_MOVEMENT;
                 intersectsSnake = (snakeX == appleX && appleY == snakeY);
             }
             appleAvailable = true;
@@ -196,24 +191,21 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
-    private static final class BodyPart {
+    private  class BodyPart {
 
        private int x;
        private int y;
-       private int snakeX;
-       private int snakeY;
        private Texture texture;
 
-       BodyPart(Texture texture, int snakeX, int snakeY) {
+       BodyPart(Texture texture) {
           this.texture = texture;
-          this.snakeX = snakeX;
-          this.snakeY = snakeY;
        }
 
        void setPosition(int x, int y) {
            this.x = x;
            this.y = y;
        }
+
 
        void draw(Batch batch) {
            if (!(x == snakeX && y == snakeY)) {
